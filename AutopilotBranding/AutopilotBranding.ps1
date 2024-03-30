@@ -174,4 +174,13 @@ reg.exe add "HKLM\SYSTEM\CurrentControlSet\Control\Network\NewNetworkWindowOff" 
 Log "Turning off Edge desktop icon"
 reg.exe add "HKLM\SOFTWARE\Policies\Microsoft\EdgeUpdate" /v "CreateDesktopShortcutDefault" /t REG_DWORD /d 0 /f /reg:64 | Out-Host
 
+# STEP 16: Configure default display scaling
+$monitorID = (Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Control\GraphicsDrivers\Configuration")[0].PSChildName
+if ((Get-ItemProperty -Path "HKCU:\Control Panel\Desktop\WindowMetrics").AppliedDPI -eq 144) {
+	Log "Modifiying the default display scaling from 150% to 125%"
+	reg.exe load HKLM\TempUser "C:\Users\Default\NTUSER.DAT" | Out-Host
+	reg.exe add "HKLM\TempUser\Control Panel\Desktop\PerMonitorSettings\$monitorID" /v DpiValue /t REG_DWORD /d 0xFFFFFFFF /f | Out-Host
+	reg.exe unload HKLM\TempUser | Out-Host
+}
+
 Stop-Transcript
